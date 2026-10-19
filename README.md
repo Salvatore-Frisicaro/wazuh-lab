@@ -42,3 +42,54 @@ L'ambiente è riproducibile tramite comandi documentati e snapshot VirtualBox
 ## Problemi incontrati e risolti
 
 ## Limiti e prossimi passi
+## Problemi incontrati e risolti
+
+### 1. Disco pieno: indici in sola lettura e dashboard inutilizzabile
+
+**Sintomo:** il dashboard si apriva ma diverse pagine non caricavano; i controlli
+sui pattern di indice (`alerts`, `monitoring`, `statistics`) restavano rossi.
+
+**Diagnosi:** `journalctl -u wazuh-dashboard` mostrava
+`cluster_block_exception ... disk usage exceeded flood-stage watermark
+(index has read-only-allow-delete block)`. `df -h` confermava `/dev/sda1` al 100%.
+`du -xh --max-depth=1 /var/ossec` indicava 9,7 GB in `/var/ossec/tmp`, dove
+`ls -lh` mostrava un file `vd_1.0.0_vd_4.13.0.tar` da 9,3 GB.
+
+**Causa:** il vulnerability detector estrae periodicamente il feed CVE in un file
+temporaneo che in questo caso non è stato rimosso. Al superamento della soglia
+*flood-stage* (95% di occupazione) OpenSearch mette automaticamente gli indici in
+sola lettura per evitare la saturazione totale del disco, bloccando la creazione
+di nuovi indici.
+
+**Soluzione:** arresto del manager (`wazuh-control stop`), rimozione del file
+temporaneo, riavvio (`wazuh-control start`). Occupazione scesa al 61%: sotto la
+soglia *high* (90%) il blocco di sola lettura viene rimosso automaticamente.
+
+### 2. Wazuh API non in esecuzione: dashboard "Offline"
+
+**Sintomo:** il dashboard mostrava la connessione API in stato `Offline` con
+l'errore `Error getting the authorization token`; una chiamata diretta
+all'endpoint di autenticazione restituiva `HTTP 000` (nessuna risposta).
+
+**Diagnosi:** `ss -tlnp | grep 55000` non restituiva nulla e
+`wazuh-control status | grep apid` riportava `wazuh-apid not running`.
+
+**Causa:** conseguenza del blocco precedente: il daemon dell'API si era fermato e
+non viene riavviato automaticamente come servizio indipendente.
+
+**Soluzione:** `wazuh-control start`, che avvia solo i daemon fermi. Verifica con
+`wazuh-apid is running` e ricaricando il dashboard.
+
+### 3. Modifica della password `admin` rifiutata
+
+**Sintomo:** il cambio password dalla dashboard restituiva
+`{"status":"FORBIDDEN","message":"Resource 'admin' is reserved."}`.
+
+**Causa:** `admin` è un utente interno riservato di OpenSearch Security:
+l'API usata dall'interfaccia rifiuta la modifica delle risorse riservate.
+
+**Soluzione:** uso del tool dedicato
+`wazuh-passwords-tool.sh -u admin -p '<nuova_password>'` con percorso assoluto.
+Su un'installazione all-in-one il tool aggiorna anche Filebeat e la configurazione
+del dashboard. Verifica: login con la nuova password e assenza di errori di
+autenticazione nei log di Filebeat.
