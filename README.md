@@ -40,10 +40,6 @@ L'ambiente è riproducibile tramite comandi documentati e snapshot VirtualBox
 ## Hardening
 
 ## Problemi incontrati e risolti
-
-## Limiti e prossimi passi
-## Problemi incontrati e risolti
-
 ### 1. Disco pieno: indici in sola lettura e dashboard inutilizzabile
 
 **Sintomo:** il dashboard si apriva ma diverse pagine non caricavano; i controlli
@@ -91,5 +87,10 @@ l'API usata dall'interfaccia rifiuta la modifica delle risorse riservate.
 **Soluzione:** uso del tool dedicato
 `wazuh-passwords-tool.sh -u admin -p '<nuova_password>'` con percorso assoluto.
 Su un'installazione all-in-one il tool aggiorna anche Filebeat e la configurazione
-del dashboard. Verifica: login con la nuova password e assenza di errori di
+del dashboard. 
+Verifica: login con la nuova password e assenza di errori di
 autenticazione nei log di Filebeat.
+
+## Limiti e prossimi passi
+
+
