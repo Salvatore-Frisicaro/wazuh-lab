@@ -30,6 +30,18 @@ L'ambiente è riproducibile tramite comandi documentati e snapshot VirtualBox
 (`01-Base-pulita`, `02-M1-funzionante`); non è un ambiente di produzione.
 
 ## Architettura
+L'evento nasce sull'endpoint, viene raccolto dall'agent e analizzato dal manager
+(decoder + ruleset); gli alert vengono spediti da Filebeat all'indexer e resi
+visibili nel dashboard.
+
+```mermaid
+flowchart LR
+    W["Windows 10 Pro N<br/>DESKTOP-8CAJRTO<br/>agent 4.14.9"] -->|"1514/TCP<br/>eventi cifrati"| M["Wazuh Manager<br/>192.168.1.8<br/>decoder + ruleset"]
+    M -->|"alerts.json"| F["Filebeat"]
+    F -->|"9200/TCP"| I["Wazuh Indexer<br/>OpenSearch"]
+    I --> D["Wazuh Dashboard<br/>443/TCP"]
+    D -->|"55000/TCP<br/>Wazuh API"| M
+```
 
 ## Componenti e porte
 
