@@ -30,6 +30,7 @@ L'ambiente è riproducibile tramite comandi documentati e snapshot VirtualBox
 (`01-Base-pulita`, `02-M1-funzionante`); non è un ambiente di produzione.
 
 ## Architettura
+
 L'evento nasce sull'endpoint, viene raccolto dall'agent e analizzato dal manager
 (decoder + ruleset); gli alert vengono spediti da Filebeat all'indexer e resi
 visibili nel dashboard.
@@ -44,6 +45,14 @@ flowchart LR
 ```
 
 ## Componenti e porte
+
+| Componente | Ruolo | Porte |
+|---|---|---|
+| Wazuh agent (`DESKTOP-8CAJRTO`) | raccoglie gli eventi dall'endpoint e li invia al manager | 1514/TCP in uscita |
+| Wazuh Manager (`192.168.1.8`) | decodifica gli eventi, applica il ruleset e genera gli alert | 1514 eventi, 1515 enrollment, 55000 API |
+| Filebeat | legge `alerts.json` e lo spedisce all'indexer | 9200/TCP in uscita |
+| Wazuh Indexer | conserva e indicizza gli alert (OpenSearch) | 9200/TCP |
+| Wazuh Dashboard | interfaccia web di analisi e gestione | 443/TCP |
 
 ## Setup del laboratorio
 
