@@ -116,6 +116,45 @@ snapshot `02-M1-funzionante`.
 
 ## Evidenze: evento 4720
 
+### Generazione dell'evento
+
+Sull'endpoint Windows, in PowerShell come amministratore:
+
+```powershell
+net user alert-test P@ssw0rd.123 /add
+```
+
+La creazione di un account locale è una tecnica di persistenza: l'attaccante crea
+un accesso che sopravvive al cambio delle credenziali originali. MITRE ATT&CK la
+classifica come **T1098 – Account Manipulation** (tattica *Persistence*).
+
+### Alert generati
+
+| Evento Windows | Significato | Regola Wazuh | Level |
+|---|---|---|---|
+| **4720** | account locale creato | 60109 | 8 |
+| **4726** | account locale eliminato | 60111 | 8 |
+
+### Campi dell'alert (4720)
+
+| Campo | Valore |
+|---|---|
+| `agent.name` | DESKTOP-8CAJRTO |
+| `data.win.system.eventID` | 4720 |
+| `rule.id` | 60109 |
+| `rule.level` | 8 |
+| `rule.mitre.id` | T1098 |
+| `rule.mitre.tactic` | Persistence |
+| `rule.mitre.technique` | Account Manipulation |
+
+### Verifica riproducibile
+
+L'alert è presente anche nel log del manager, non solo nel dashboard:
+
+```bash
+sudo grep -c "alert-test" /var/ossec/logs/alerts/alerts.json
+```
+
 ## Hardening
 
 ## Problemi incontrati e risolti
