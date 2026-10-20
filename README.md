@@ -157,7 +157,23 @@ sudo grep -c "alert-test" /var/ossec/logs/alerts/alerts.json
 
 ## Hardening
 
+Azioni applicate prima di collegare l'endpoint:
+
+- **Cambio delle credenziali di default.** L'appliance nasce con `admin`/`admin`
+  (dashboard) e `wazuh-user`/`wazuh` (sistema), identiche su ogni copia distribuita
+  della OVA. Le password sono state cambiate prima di esporre la VM in rete.
+- **Cambio della password `admin` tramite tool ufficiale**
+  (`wazuh-passwords-tool.sh`), perché `admin` è una risorsa riservata di OpenSearch
+  Security e non è modificabile dall'interfaccia (vedi *Problemi incontrati*).
+- **Nessuna credenziale nel repository:** password, chiavi e token non sono
+  versionati e non compaiono negli screenshot.
+- **Rete:** l'endpoint Windows è in rete bridged solo per raggiungere il manager;
+  le macchine di attacco (Kali, Metasploitable) saranno poste su una rete interna
+  isolata, per non esporre host deliberatamente vulnerabili alla rete domestica.
+- **Ambiente non produttivo e non esposto su internet.**
+
 ## Problemi incontrati e risolti
+
 ### 1. Disco pieno: indici in sola lettura e dashboard inutilizzabile
 
 **Sintomo:** il dashboard si apriva ma diverse pagine non caricavano; i controlli
@@ -210,5 +226,23 @@ Verifica: login con la nuova password e assenza di errori di
 autenticazione nei log di Filebeat.
 
 ## Limiti e prossimi passi
+
+**Limiti attuali**
+
+- Gli alert sono stati generati da **regole di default** del ruleset Wazuh
+  (60109, 60111), non da regole scritte nel laboratorio.
+- La rilevazione dell'evento 4720 è generica: in un ambiente reale produrrebbe
+  falsi positivi (creazione di utenti da helpdesk e strumenti di gestione), da
+  gestire con esclusioni mirate.
+- Il disco della appliance (25 GB) limita la ritenzione dei dati.
+- Il vulnerability detector è attivo e ha già generato un file temporaneo di
+  9,3 GB: su questo disco va monitorato o disabilitato.
+
+**Prossimi passi**
+
+- Regole di detection proprie, con test e note sui falsi positivi.
+- Sysmon sull'endpoint e simulazione di tecniche di attacco per validare le regole.
+- Rilevamento e blocco automatico di brute force SSH (Active Response).
+- Tool di triage phishing e generazione automatica di report.
 
 
