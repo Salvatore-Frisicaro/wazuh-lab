@@ -56,6 +56,64 @@ flowchart LR
 
 ## Setup del laboratorio
 
+Host: VirtualBox 7.2.8 su Windows 11, 12 core logici, 16 GB di RAM.
+Wazuh gira su una VM all-in-one (Amazon Linux 2023) con 4 vCPU e 6 GB di RAM.
+
+### 1. Verifica dell'immagine
+
+```powershell
+Get-FileHash .\wazuh-4.14.9.ova -Algorithm SHA512
+```
+
+L'hash è stato confrontato con il file `.sha512` pubblicato da Wazuh e corrisponde,
+quindi l'immagine è integra. Il disco virtuale della appliance è da **25 GB** — la
+documentazione ne dichiara 50 — e questo va tenuto presente (vedi *Problemi
+incontrati e risolti*).
+
+### 2. Import della VM
+
+```powershell
+VBoxManage import wazuh-4.14.9.ova --vsys 0 --vmname "Wazuh-Manager" --cpus 4 --memory 6144
+VBoxManage modifyvm "Wazuh-Manager" --graphicscontroller vmsvga --rtc-use-utc on
+```
+
+I due parametri finali non sono opzionali: il primo evita il blocco della finestra
+della VM, il secondo evita lo sfasamento dei timestamp nei log.
+
+### 3. Verifica dello stack
+
+```bash
+systemctl is-active wazuh-manager wazuh-indexer wazuh-dashboard filebeat
+sudo /var/ossec/bin/wazuh-control status
+sudo ss -tlnp | grep -E '443|1514|1515|55000|9200'
+```
+
+### 4. Hardening e punto di ripristino
+
+Cambio delle password di default (`admin`, `wazuh-user`) e snapshot
+`01-Base-pulita`, per avere un punto di ripristino prima di aggiungere endpoint.
+
+### 5. Deploy dell'agent Windows
+
+Su una VM Windows 10 Pro N con rete bridged (IP `192.168.1.9`), PowerShell come
+amministratore:
+
+```powershell
+Set-Location $env:TEMP
+Invoke-WebRequest "https://packages.wazuh.com/4.x/windows/wazuh-agent-4.14.9-1.msi" -OutFile "wazuh-agent.msi"
+Start-Process msiexec.exe -ArgumentList '/i wazuh-agent.msi /q WAZUH_MANAGER="192.168.1.8"' -Wait
+Start-Service wazuhsvc
+```
+
+### 6. Verifica dell'enrollment
+
+```bash
+sudo /var/ossec/bin/agent_control -l
+```
+
+L'agent deve comparire come `Active`. L'ambiente viene quindi salvato con lo
+snapshot `02-M1-funzionante`.
+
 ## Evidenze: evento 4720
 
 ## Hardening
