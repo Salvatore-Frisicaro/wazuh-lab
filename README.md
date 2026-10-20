@@ -2,11 +2,11 @@
 
 > Abstract
 > A Wazuh 4.14.9 SOC lab that detects local account creation and deletion on a
-> Windows 10 endpoint (Windows Security events 4720/4726, Wazuh rules 60109/60111,
+> Windows 10 endpoint (Windows Security events 4720/4722/4738/4726, Wazuh rules 60109/60110/60111,
 > MITRE T1098), documenting the full pipeline from agent enrollment to validated alerts.
 >
-> It also documents the operational failures hit while building it a full disk that
-> put the indexer's indices in read-only mode and left the Wazuh API down with the
+> It also documents the operational failures hit while building it - a full disk that
+> put the indexer's indices in read-only mode and left the Wazuh API down - with the
 > diagnosis and fix for each.
 >
 > The lab is reproducible through documented commands and VirtualBox snapshots;
@@ -133,9 +133,9 @@ classifica come **T1098 – Account Manipulation** (tattica *Persistence*).
 | Evento Windows | Significato | Regola Wazuh | Level |
 |---|---|---|---|
 | **4720** | account locale creato | 60109 | 8 |
-| **4726** | account locale eliminato | 60111 | 8 |
 | **4722** | account abilitato | 60109 | 8 |
 | **4738** | account modificato | 60110 | 8 |
+| **4726** | account disabilitato o eliminato | 60111 | 8 |
 
 Un singolo comando di creazione account produce quattro eventi distinti: quattro
 punti di telemetria per un'unica azione, tutti mappati dal ruleset e correlati tra
@@ -239,7 +239,7 @@ autenticazione nei log di Filebeat.
 **Limiti attuali**
 
 - Gli alert sono stati generati da **regole di default** del ruleset Wazuh
-  (60109, 60111), non da regole scritte nel laboratorio.
+  (60109, 60110, 60111), non da regole scritte nel laboratorio.
 - La rilevazione dell'evento 4720 è generica: in un ambiente reale produrrebbe
   falsi positivi (creazione di utenti da helpdesk e strumenti di gestione), da
   gestire con esclusioni mirate.
