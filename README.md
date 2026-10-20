@@ -134,6 +134,15 @@ classifica come **T1098 – Account Manipulation** (tattica *Persistence*).
 |---|---|---|---|
 | **4720** | account locale creato | 60109 | 8 |
 | **4726** | account locale eliminato | 60111 | 8 |
+| **4722** | account abilitato | 60109 | 8 |
+| **4738** | account modificato | 60110 | 8 |
+
+Un singolo comando di creazione account produce quattro eventi distinti: quattro
+punti di telemetria per un'unica azione, tutti mappati dal ruleset e correlati tra
+loro tramite `agent.name` e l'intervallo temporale.
+
+![Eventi 4720, 4722, 4738 e 4726 rilevati dal ruleset Wazuh](docs/img/alert-4720.png)
+
 
 ### Campi dell'alert (4720)
 
